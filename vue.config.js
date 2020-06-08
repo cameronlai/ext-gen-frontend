@@ -1,3 +1,3 @@
 module.exports = {
-  publicPath: "/ext-gen-frontend",
+  //publicPath: "/ext-gen-frontend",
 };

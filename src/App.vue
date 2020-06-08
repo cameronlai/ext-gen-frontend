@@ -23,7 +23,10 @@
             <b-button variant="outline-primary" v-on:click="show('Visualize')">Visualize</b-button>
           </b-row>
           <b-row class="m-2">
-            <b-button variant="outline-primary" v-on:click="generate()">Generate Timetable</b-button>
+            <b-button
+              variant="outline-primary"
+              v-on:click="show('Visualize');generate()"
+            >Generate Timetable</b-button>
           </b-row>
         </b-col>
         <b-col cols="9">
@@ -32,6 +35,15 @@
           </div>
           <div v-if="rightColPageName === 'StudentRecord'">
             <EditTableStudentRecord :items="studentRecordItems" />
+          </div>
+          <div v-if="rightColPageName === 'Visualize'">
+            <FullCalendar
+              defaultView="timeGridWeek"
+              :weekends="false"
+              :plugins="calendarPlugins"
+              :events="events"
+              :defaultDate="defaultDate"
+            />
           </div>
         </b-col>
       </b-row>
@@ -51,15 +63,19 @@
 import EditTableTimeSlots from "./components/EditTableTimeSlots.vue";
 import EditTableStudentRecord from "./components/EditTableStudentRecord.vue";
 import axios from "axios";
+import FullCalendar from "@fullcalendar/vue";
+import timegridPlugin from "@fullcalendar/timegrid";
 
 export default {
   name: "App",
   components: {
     EditTableTimeSlots,
-    EditTableStudentRecord
+    EditTableStudentRecord,
+    FullCalendar // make the <FullCalendar> tag available
   },
   data() {
     return {
+      calendarPlugins: [timegridPlugin],
       rightColPageName: "StudentRecord",
       timeSlotsItems: [
         { start: "2015-11-12,9:00", end: "2015-11-12,12:00" },
@@ -69,12 +85,42 @@ export default {
         { name: "A", subjects: "Chinese,English" },
         { name: "B", subjects: "Chinese,English,Math" },
         { name: "C", subjects: "Chinese,English,Math" }
+      ],
+      defaultDate: "2015-11-11",
+      events: [
+        {
+          description: "",
+          end: "2015-11-11T10:00:00",
+          start: "2015-11-11T09:00:00",
+          title: "Math"
+        },
+        {
+          description: "",
+          end: "2015-11-12T12:00:00",
+          id: "timeSlots",
+          rendering: "background",
+          start: "2015-11-11T09:00:00"
+        },
+        {
+          description: "",
+          end: "2015-11-11T11:00:00",
+          start: "2015-11-11T10:00:00",
+          title: "English"
+        },
+        {
+          description: "",
+          end: "2015-11-11T12:00:00",
+          start: "2015-11-11T11:00:00",
+          title: "Chinese"
+        }
       ]
     };
   },
   methods: {
-    generate: function() {
-      console.log("here");
+    generate: async function() {
+      // Clear data
+      this.events = [];
+      // Trigger the API call
       let body = {};
       body["timeSlots"] = this.timeSlotsItems;
       body["studentRecord"] = [];
@@ -86,42 +132,21 @@ export default {
         body["studentRecord"].push(item);
       }
       console.log(body);
-      axios
+      await axios
         .post(
           "https://asia-east2-personal-279606.cloudfunctions.net/ext-gen-backend",
           body
         )
-        .then(function(response) {
+        .then(response => {
           console.log(response);
+          const body = response.data;
+          this.defaultDate = body.defaultDate;
+          this.events = body.events;
         })
         .catch(function(error) {
           // handle error
           console.log(error);
         });
-      /*
-      var request = require("request");      
-      var options = {
-        method: "POST",
-        url:
-          "https://asia-east2-personal-279606.cloudfunctions.net/ext-gen-backend-dev-first",
-        headers: {
-          "Access-Control-Allow-Headers": "*",
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          timeSlots: [{ start: "2015-11-11,9:00", end: "2015-11-12,12:00" }],
-          studentRecord: [
-            ["A", "Chinese", "English"],
-            ["B", "Chinese", "English", "Math"],
-            ["C", "Chinese", "English", "Math"]
-          ]
-        })
-      };
-      request(options, function(error, response) {
-        if (error) throw new Error(error);
-        console.log(response.body);
-      });
-      */
     },
     show: function(name) {
       this.rightColPageName = name;
@@ -129,7 +154,6 @@ export default {
   }
 };
 </script>
-
 <style>
 #app {
   font-family: Avenir, Helvetica, Arial, sans-serif;
@@ -139,4 +163,8 @@ export default {
   color: #2c3e50;
   margin-top: 60px;
 }
+</style>
+<style lang='sass'>
+@import '~@fullcalendar/core/main.css'
+@import '~@fullcalendar/timegrid/main.css'
 </style>
