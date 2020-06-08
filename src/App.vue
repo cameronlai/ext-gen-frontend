@@ -42,6 +42,7 @@
           <a href="http://cameronlai.com">Cameron Lai</a>
         </p>
       </b-row>
+      <hr />
     </b-container>
   </div>
 </template>
