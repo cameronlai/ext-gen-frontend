@@ -20,7 +20,7 @@
             >Edit Student Record</b-button>
           </b-row>
           <b-row class="m-2">
-            <b-button variant="outline-primary" v-on:click="show('Visualize')">Visualize</b-button>
+            <b-button variant="outline-primary" v-on:click="show('Visualize');visualize()">Visualize</b-button>
           </b-row>
           <b-row class="m-2">
             <b-button
@@ -43,6 +43,7 @@
               :plugins="calendarPlugins"
               :events="events"
               :defaultDate="defaultDate"
+              :eventBackgroundColor="white"
             />
           </div>
         </b-col>
@@ -65,6 +66,7 @@ import EditTableStudentRecord from "./components/EditTableStudentRecord.vue";
 import axios from "axios";
 import FullCalendar from "@fullcalendar/vue";
 import timegridPlugin from "@fullcalendar/timegrid";
+//import moment from "moment";
 
 export default {
   name: "App",
@@ -117,7 +119,15 @@ export default {
     };
   },
   methods: {
-    generate: async function() {
+    updateTextColor: function() {
+      for (let i = 0; i < this.events.length; i++) {
+        this.events[i].textColor = "white";
+      }
+    },
+    visualize: function() {
+      this.updateTextColor();
+    },
+    generate: function() {
       // Clear data
       this.events = [];
       // Trigger the API call
@@ -132,7 +142,7 @@ export default {
         body["studentRecord"].push(item);
       }
       console.log(body);
-      await axios
+      axios
         .post(
           "https://asia-east2-personal-279606.cloudfunctions.net/ext-gen-backend",
           body
@@ -142,6 +152,7 @@ export default {
           const body = response.data;
           this.defaultDate = body.defaultDate;
           this.events = body.events;
+          this.updateTextColor();
         })
         .catch(function(error) {
           // handle error
