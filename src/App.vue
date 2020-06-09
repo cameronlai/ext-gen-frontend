@@ -11,6 +11,9 @@
       <b-row>
         <b-col cols="3">
           <b-row class="m-2">
+            <h3>Menu</h3>
+          </b-row>
+          <b-row class="m-2">
             <b-button variant="outline-primary" v-on:click="show('TimeSlots')">Edit Time Slots</b-button>
           </b-row>
           <b-row class="m-2">
@@ -20,7 +23,10 @@
             >Edit Student Record</b-button>
           </b-row>
           <b-row class="m-2">
-            <b-button variant="outline-primary" v-on:click="show('Visualize');visualize()">Visualize</b-button>
+            <b-button
+              variant="outline-primary"
+              v-on:click="show('Visualize');visualize()"
+            >Visualize Time Slots</b-button>
           </b-row>
           <b-row class="m-2">
             <b-button
@@ -43,7 +49,6 @@
               :plugins="calendarPlugins"
               :events="events"
               :defaultDate="defaultDate"
-              :eventBackgroundColor="white"
             />
           </div>
         </b-col>
@@ -66,7 +71,7 @@ import EditTableStudentRecord from "./components/EditTableStudentRecord.vue";
 import axios from "axios";
 import FullCalendar from "@fullcalendar/vue";
 import timegridPlugin from "@fullcalendar/timegrid";
-//import moment from "moment";
+import moment from "moment";
 
 export default {
   name: "App",
@@ -90,6 +95,7 @@ export default {
       ],
       defaultDate: "2015-11-11",
       events: [
+        /*
         {
           description: "",
           end: "2015-11-11T10:00:00",
@@ -103,18 +109,7 @@ export default {
           rendering: "background",
           start: "2015-11-11T09:00:00"
         },
-        {
-          description: "",
-          end: "2015-11-11T11:00:00",
-          start: "2015-11-11T10:00:00",
-          title: "English"
-        },
-        {
-          description: "",
-          end: "2015-11-11T12:00:00",
-          start: "2015-11-11T11:00:00",
-          title: "Chinese"
-        }
+        */
       ]
     };
   },
@@ -125,6 +120,23 @@ export default {
       }
     },
     visualize: function() {
+      this.events = [];
+
+      const firstMoment = moment(this.timeSlotsItems[0].start);
+      this.defaultDate = firstMoment.format();
+
+      for (let i = 0; i < this.timeSlotsItems.length; i++) {
+        const item = this.timeSlotsItems[i];
+        const startMoment = moment(item.start);
+        const endMoment = moment(item.end);
+
+        this.events.push({
+          description: "",
+          end: endMoment.format(),
+          rendering: "background",
+          start: startMoment.format()
+        });
+      }
       this.updateTextColor();
     },
     generate: function() {
